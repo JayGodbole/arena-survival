@@ -3,75 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARENA SURVIVAL - MULTIPLAYER PRO</title>
+    <title>ARENA SURVIVAL - LOGIN & INTERACT</title>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; color: white; }
         canvas { display: block; width: 100%; height: 100%; }
-        #ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; color: white; }
+        #ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
         
-        #coords-bar { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px; font-family: monospace; font-size: 14px; border: 1px solid #444; color: #2ecc71; }
+        /* AUTH OVERLAY */
+        #auth-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.98));
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            pointer-events: auto; z-index: 2000;
+        }
+        .auth-box { background: rgba(255,255,255,0.03); padding: 40px; border-radius: 20px; border: 1px solid #2ecc71; text-align: center; width: 340px; box-shadow: 0 0 30px rgba(46, 204, 113, 0.2); }
+        input { width: 100%; padding: 14px; margin: 12px 0; background: #111; border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; outline: none; }
+        input:focus { border-color: #2ecc71; }
+        .auth-btn { width: 100%; padding: 14px; background: #2ecc71; border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 15px; font-size: 16px; transition: 0.2s; }
+        .auth-btn:hover { background: #27ae60; transform: translateY(-2px); }
+        .switch-link { margin-top: 20px; font-size: 13px; color: #888; cursor: pointer; }
+        .switch-link b { color: #2ecc71; }
+
+        #coords { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); font-family: monospace; color: #2ecc71; background: rgba(0,0,0,0.6); padding: 5px 15px; border-radius: 20px; border: 1px solid #333; }
+        #wood { position: absolute; top: 15px; right: 20px; font-size: 26px; color: #ffa502; font-weight: bold; text-shadow: 2px 2px black; }
         
-        #settings-btn { position: absolute; top: 15px; left: 15px; padding: 10px 15px; background: rgba(0,0,0,0.7); border: 1px solid #444; color: white; border-radius: 5px; cursor: pointer; pointer-events: auto; font-size: 14px; }
-        #settings-menu { position: absolute; top: 65px; left: 15px; width: 280px; background: rgba(0,0,0,0.95); border: 2px solid #2ecc71; padding: 15px; border-radius: 8px; display: none; pointer-events: auto; box-shadow: 0 0 20px rgba(0,0,0,0.5); max-height: 80vh; overflow-y: auto; }
-
-        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: auto; z-index: 1000; }
-        #start-btn { padding: 20px 60px; font-size: 32px; background: #2ecc71; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        #start-btn:hover { background: #27ae60; transform: scale(1.05); }
-
-        #hud { position: absolute; bottom: 20px; left: 20px; width: 200px; }
-        .bar { width: 100%; height: 12px; background: rgba(0,0,0,0.5); border: 1px solid #333; margin-bottom: 8px; border-radius: 7px; overflow: hidden; }
+        #hud { position: absolute; bottom: 30px; left: 30px; width: 220px; }
+        .bar { width: 100%; height: 14px; background: rgba(0,0,0,0.6); border: 1px solid #444; margin-bottom: 10px; border-radius: 7px; overflow: hidden; }
         .fill { height: 100%; width: 100%; transition: width 0.3s; }
         #hp-f { background: #ff4757; }
         #hg-f { background: #ffa502; }
         #ts-f { background: #1e90ff; }
         
-        #inv { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; pointer-events: auto; }
-        .slot { width: 60px; height: 60px; background: rgba(0,0,0,0.7); border: 2px solid #555; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; position: relative; cursor: pointer; }
-        .slot.active { border-color: #2ecc71; background: rgba(46, 204, 113, 0.2); transform: scale(1.1); }
-        .qty { position: absolute; bottom: 2px; right: 4px; font-size: 11px; font-weight: bold; color: #2ecc71; }
+        #inv { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; pointer-events: auto; }
+        .slot { width: 65px; height: 65px; background: rgba(0,0,0,0.8); border: 2px solid #555; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 28px; position: relative; }
+        .slot.active { border-color: #2ecc71; background: rgba(46, 204, 113, 0.2); }
+        .qty { position: absolute; bottom: 4px; right: 6px; font-size: 12px; font-weight: bold; color: #2ecc71; }
 
-        #wood { position: absolute; top: 15px; right: 15px; font-size: 24px; color: #ffa502; font-weight: bold; text-shadow: 2px 2px black; }
-        #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 10px; height: 10px; border: 1px solid white; border-radius: 50%; opacity: 0.5; }
-        
-        input[type="text"], input[type="password"] { width: 90%; padding: 8px; margin: 5px 0; background: #222; border: 1px solid #444; color: white; border-radius: 4px; }
-        .save-btn { background: #2ecc71; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; width: 100%; margin-top: 10px; font-weight: bold; }
+        #interaction-msg { position: absolute; top: 25%; left: 50%; transform: translate(-50%, -50%); background: rgba(46, 204, 113, 0.9); padding: 12px 25px; border-radius: 12px; display: none; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 14px; height: 14px; border: 1px solid white; border-radius: 50%; opacity: 0.6; }
     </style>
 </head>
 <body>
-    <div id="ui">
-        <div id="coords-bar">X: 0 | Y: 0 | Z: 0</div>
-        <div id="crosshair"></div>
-        <div id="wood">WOOD: 50</div>
+    <div id="auth-overlay">
+        <h1 style="color:#2ecc71; font-size: 52px; margin-bottom: 5px;">ARENA SURVIVAL</h1>
+        <p style="color:#666; letter-spacing: 3px; margin-bottom: 40px; font-weight: bold;">SURVIVE. BUILD. CONNECT.</p>
         
-        <button id="settings-btn">⚙️ SETTINGS</button>
-        <div id="settings-menu">
-            <h4 style="margin:0 0 10px 0; color:#2ecc71;">GAME SETTINGS</h4>
-            
-            <div style="font-size:12px; margin-bottom:15px; border-bottom: 1px solid #333; padding-bottom: 10px;">
-                <strong>MULTIPLAYER (Supabase)</strong><br>
-                <input type="text" id="world-id" placeholder="World ID (e.g. survival-1)">
-                <input type="text" id="player-name" placeholder="Your Name">
-                <p style="font-size:10px; color:#888;">Enter same World ID to play with friends.</p>
-            </div>
-
-            <div style="font-size:12px; margin-bottom:15px; border-bottom: 1px solid #333; padding-bottom: 10px;">
-                <strong>SAVE PROGRESS</strong><br>
-                <button class="save-btn" onclick="game.saveToCloud()">FORCE CLOUD SAVE</button>
-                <button class="save-btn" style="background:#3498db" onclick="game.saveToLocal()">LOCAL SAVE</button>
-                <p id="save-status" style="font-size:10px; color:#aaa; margin-top:5px;">Last saved: Never</p>
-            </div>
-
-            <label style="font-size:12px; display:block; margin-bottom:12px; cursor:pointer;">
-                <input type="checkbox" id="double-tap-toggle"> Double Click to Lock
-            </label>
-            
-            <div style="font-size:12px; margin-bottom:15px;">
-                Mouse Sensitivity: <span id="sens-val" style="color:#2ecc71; font-weight:bold;">30</span><br>
-                <input type="range" id="sens-slider" min="1" max="100" value="30" style="width:100%; cursor:pointer;">
-            </div>
-            
-            <button style="width:100%; background:#444; border:none; color:white; padding:8px; border-radius:4px; cursor:pointer;" onclick="document.getElementById('settings-menu').style.display='none'">CLOSE</button>
+        <div class="auth-box">
+            <h3 id="auth-title">CREATE ACCOUNT</h3>
+            <input type="text" id="user-input" placeholder="Survivor Name">
+            <input type="password" id="pass-input" placeholder="Password">
+            <button class="auth-btn" id="submit-auth">START JOURNEY</button>
+            <div class="switch-link" id="auth-switch">Already have a character? <b>Login Here</b></div>
         </div>
+    </div>
+
+    <div id="ui">
+        <div id="coords">X: 0 | Y: 0 | Z: 0</div>
+        <div id="wood">WOOD: 50</div>
+        <div id="crosshair"></div>
+        <div id="interaction-msg"></div>
 
         <div id="hud">
             <div class="bar"><div id="hp-f" class="fill"></div></div>
@@ -80,345 +70,245 @@
         </div>
 
         <div id="inv">
-            <div class="slot active" id="s0" onclick="game.selectSlot(0)">🪓</div>
-            <div class="slot" id="s1" onclick="game.selectSlot(1)">🧱<span id="q1" class="qty">5</span></div>
-            <div class="slot" id="s2" onclick="game.selectSlot(2)">🧱<span id="q2" class="qty">5</span></div>
-            <div class="slot" id="s3" onclick="game.selectSlot(3)">📐<span id="q3" class="qty">5</span></div>
-            <div class="slot" id="s4" onclick="game.selectSlot(4)">🪜<span id="q4" class="qty">5</span></div>
-        </div>
-
-        <div id="overlay">
-            <h1 style="font-size: 50px; color: #2ecc71; margin-bottom: 5px;">ARENA SURVIVAL</h1>
-            <p style="margin-bottom: 30px; color: #888;">MULTIPLAYER • PERSISTENT WORLD</p>
-            <button id="start-btn">ENTER WILDERNESS</button>
-            <p style="margin-top:20px; font-size:12px; color: #555;">WASD to Move | E to Craft | 1-5 to Switch | L to Lock Cursor</p>
+            <div class="slot active">🪓</div>
+            <div class="slot">🧱<span id="q1" class="qty">5</span></div>
+            <div class="slot">🧱<span id="q2" class="qty">5</span></div>
+            <div class="slot">📐<span id="q3" class="qty">5</span></div>
+            <div class="slot">🪜<span id="q4" class="qty">5</span></div>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <script>
         class SurvivalGame {
             constructor() {
                 this.isLocked = false;
-                this.doubleTap = false;
-                this.lastClick = 0;
-                this.sensitivity = 30;
-                
-                // DATA
-                this.worldId = localStorage.getItem('arena_world_id') || 'public-world';
-                this.playerName = localStorage.getItem('arena_player_name') || 'Survivor_' + Math.floor(Math.random()*1000);
+                this.account = null;
+                this.authMode = 'register';
+                this.socket = io();
                 
                 this.stats = { hp: 100, hunger: 100, thirst: 100, wood: 50 };
-                this.items = [{id:'axe'}, {id:'base', q:5}, {id:'wall', q:5}, {id:'roof', q:5}, {id:'stairs', q:5}];
-                this.selected = 0;
                 this.keys = {};
                 this.velocity = new THREE.Vector3();
                 this.yaw = 0; this.pitch = 0;
-                this.cameraHeight = 1.7;
                 
-                this.trees = []; this.bushes = []; this.enemies = []; this.collidableMeshes = [];
-                this.ghost = null;
-                
-                // MULTIPLAYER
-                this.remotePlayers = {}; // { id: mesh }
+                this.remotePlayers = {}; 
+                this.colliders = [];
 
-                this.init();
-                this.loadFromLocal();
+                this.initEngine();
+                this.setupAuth();
+                this.setupMultiplayer();
+                this.animate();
             }
 
-            init() {
+            initEngine() {
                 this.scene = new THREE.Scene();
                 this.scene.background = new THREE.Color(0x87CEEB);
                 this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-                this.camera.position.set(0, 5, 0);
-
+                
                 this.renderer = new THREE.WebGLRenderer({ antialias: true });
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
                 this.renderer.shadowMap.enabled = true;
-                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
                 document.body.appendChild(this.renderer.domElement);
 
-                this.scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-                const sun = new THREE.DirectionalLight(0xffffff, 0.9);
+                this.scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+                const sun = new THREE.DirectionalLight(0xffffff, 1);
                 sun.position.set(50, 100, 50); sun.castShadow = true;
                 this.scene.add(sun);
 
-                const ground = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000), new THREE.MeshStandardMaterial({ color: 0x3b7d32 }));
-                ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; ground.name = "GROUND";
+                const ground = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), new THREE.MeshStandardMaterial({ color: 0x3b7d32 }));
+                ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true;
                 this.scene.add(ground);
-                this.collidableMeshes.push(ground);
-
-                // Trees
-                for(let i=0; i<40; i++) this.spawnRealisticTree((Math.random()-0.5)*300, (Math.random()-0.5)*300);
-                // Monsters
-                for(let i=0; i<6; i++) this.spawnEnemy((Math.random()-0.5)*150, (Math.random()-0.5)*150);
+                this.colliders.push(ground);
 
                 this.raycaster = new THREE.Raycaster();
                 this.clock = new THREE.Clock();
-
-                this.setupUI();
-                this.setupEvents();
-                this.animate();
-                
-                // Auto-save every 30 seconds
-                setInterval(() => this.saveToLocal(), 30000);
             }
 
-            spawnRealisticTree(x, z) {
-                const treeGroup = new THREE.Group();
-                const trunkHeight = 6 + Math.random() * 2;
-                const trunkGeo = new THREE.CylinderGeometry(0.4, 0.6, trunkHeight, 8);
-                const trunkMat = new THREE.MeshStandardMaterial({ color: 0x4b2d13 });
-                const trunk = new THREE.Mesh(trunkGeo, trunkMat);
-                trunk.position.y = trunkHeight / 2;
-                trunk.castShadow = true;
-                treeGroup.add(trunk);
+            setupAuth() {
+                const title = document.getElementById('auth-title');
+                const switchBtn = document.getElementById('auth-switch');
+                const submitBtn = document.getElementById('submit-auth');
 
-                const leafMat = new THREE.MeshStandardMaterial({ color: 0x1b5e20 });
-                for(let i=0; i<5; i++) {
-                    const leaves = new THREE.Mesh(new THREE.DodecahedronGeometry(2, 0), leafMat);
-                    leaves.position.set((Math.random()-0.5)*3, (trunkHeight * 0.6) + Math.random()*4, (Math.random()-0.5)*3);
-                    leaves.castShadow = true;
-                    treeGroup.add(leaves);
-                }
-                treeGroup.position.set(x, 0, z);
-                treeGroup.name = "TREE";
-                this.scene.add(treeGroup);
-                this.trees.push(treeGroup);
-                this.collidableMeshes.push(trunk);
-            }
-
-            spawnEnemy(x, z) {
-                const g = new THREE.Group();
-                const b = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 2), new THREE.MeshStandardMaterial({ color: 0xe67e22 }));
-                b.position.y = 0.5; b.castShadow = true; g.add(b);
-                g.position.set(x, 0, z); g.name = "ENEMY"; this.scene.add(g);
-                this.enemies.push({ m: g, hp: 100 });
-                this.collidableMeshes.push(b);
-            }
-
-            setupUI() {
-                const start = document.getElementById('start-btn');
-                start.onclick = () => {
-                    document.getElementById('overlay').style.display = 'none';
-                    this.isLocked = true;
-                    document.body.requestPointerLock();
+                switchBtn.onclick = () => {
+                    this.authMode = (this.authMode === 'register' ? 'login' : 'register');
+                    title.innerText = this.authMode === 'register' ? 'CREATE ACCOUNT' : 'LOGIN SURVIVOR';
+                    submitBtn.innerText = this.authMode === 'register' ? 'START JOURNEY' : 'LOGIN TO WORLD';
+                    switchBtn.innerHTML = this.authMode === 'register' ? 
+                        'Already have a character? <b>Login Here</b>' : 
+                        'New here? <b>Create Account</b>';
                 };
-                
-                document.getElementById('settings-btn').onclick = () => {
-                    const m = document.getElementById('settings-menu');
-                    m.style.display = m.style.display === 'block' ? 'none' : 'block';
-                };
-                
-                const wId = document.getElementById('world-id');
-                const pName = document.getElementById('player-name');
-                wId.value = this.worldId;
-                pName.value = this.playerName;
-                wId.onchange = (e) => { this.worldId = e.target.value; localStorage.setItem('arena_world_id', this.worldId); };
-                pName.onchange = (e) => { this.playerName = e.target.value; localStorage.setItem('arena_player_name', this.playerName); };
 
-                document.getElementById('double-tap-toggle').onchange = (e) => this.doubleTap = e.target.checked;
-                const sensSlider = document.getElementById('sens-slider');
-                const sensVal = document.getElementById('sens-val');
-                sensSlider.oninput = (e) => {
-                    this.sensitivity = parseInt(e.target.value);
-                    sensVal.innerText = this.sensitivity;
+                submitBtn.onclick = () => {
+                    const username = document.getElementById('user-input').value;
+                    const password = document.getElementById('pass-input').value;
+                    if(!username || !password) return alert("Please fill all fields");
+                    
+                    this.socket.emit('auth-request', { username, password, type: this.authMode });
                 };
-            }
 
-            setupEvents() {
-                document.addEventListener('pointerlockchange', () => {
-                    this.isLocked = (document.pointerLockElement === document.body);
-                    if(!this.isLocked) document.getElementById('overlay').style.display = 'flex';
-                });
-                document.addEventListener('mousemove', (e) => {
-                    if(!this.isLocked) return;
-                    const factor = this.sensitivity * 0.00007;
-                    this.yaw -= e.movementX * factor;
-                    this.pitch -= e.movementY * factor;
-                    this.pitch = Math.max(-1.5, Math.min(1.5, this.pitch));
-                    this.camera.quaternion.setFromEuler(new THREE.Euler(this.pitch, this.yaw, 0, 'YXZ'));
-                });
-                window.onkeydown = (e) => {
-                    this.keys[e.code] = true;
-                    if(e.code === 'KeyL') document.body.requestPointerLock();
-                    if(e.code.startsWith('Digit')) {
-                        let i = parseInt(e.code.replace('Digit',''))-1;
-                        if(i >= 0 && i < 5) this.selectSlot(i);
-                    }
-                    if(e.code === 'KeyE') this.craft();
-                    if(e.code === 'KeyR' && this.ghost) this.ghost.rotateY(Math.PI/2);
-                };
-                window.onkeyup = (e) => this.keys[e.code] = false;
-                window.onmousedown = (e) => {
-                    if(this.isLocked) { this.act(); }
-                    else if(this.doubleTap) {
-                        const now = Date.now();
-                        if(now - this.lastClick < 300) { document.getElementById('overlay').style.display = 'none'; this.isLocked = true; document.body.requestPointerLock(); }
-                        this.lastClick = now;
-                    }
-                };
-            }
-
-            selectSlot(i) {
-                this.selected = i;
-                if(this.ghost) { this.scene.remove(this.ghost); this.ghost = null; }
-                const item = this.items[i];
-                if(item.id !== 'axe') {
-                    const g = new THREE.Group();
-                    if(item.id === 'stairs') {
-                        for(let k=0; k<10; k++) {
-                            const step = new THREE.Mesh(new THREE.BoxGeometry(4, 0.4, 0.4), new THREE.MeshStandardMaterial({ color: 0x8d6e63, transparent: true, opacity: 0.5 }));
-                            step.position.set(0, k*0.4, k*0.4); g.add(step);
-                        }
+                this.socket.on('auth-response', (res) => {
+                    if (res.success) {
+                        this.account = res.user;
+                        document.getElementById('auth-overlay').style.display = 'none';
+                        this.startSession(res.data);
                     } else {
-                        const sizes = { base: [4, 0.5, 4], wall: [4, 4, 0.2], roof: [4, 0.2, 4] };
-                        g.add(new THREE.Mesh(new THREE.BoxGeometry(...sizes[item.id]), new THREE.MeshStandardMaterial({ color: 0x8d6e63, transparent: true, opacity: 0.5 })));
+                        alert(res.msg);
                     }
-                    this.ghost = g; this.scene.add(this.ghost);
-                }
-                const slots = document.querySelectorAll('.slot');
-                slots.forEach((s, idx) => s.classList.toggle('active', idx === i));
+                });
             }
 
-            craft() {
-                const item = this.items[this.selected];
-                if(item.id !== 'axe' && this.stats.wood >= 10) { this.stats.wood -= 10; item.q++; this.updateUI(); }
-            }
-
-            act() {
-                this.raycaster.setFromCamera(new THREE.Vector2(0, 0), this.camera);
-                const item = this.items[this.selected];
-                if(item.id === 'axe') {
-                    const enemies = this.raycaster.intersectObjects(this.enemies.map(e => e.m), true);
-                    if(enemies.length > 0 && enemies[0].distance < 5) {
-                        const target = this.enemies.find(e => e.m === enemies[0].object.parent);
-                        if(target) { target.hp -= 10; if(target.hp <= 0) { this.scene.remove(target.m); this.enemies = this.enemies.filter(e => e !== target); this.stats.wood += 30; } }
-                        return;
-                    }
-                    const trees = this.raycaster.intersectObjects(this.trees, true);
-                    if(trees.length > 0 && trees[0].distance < 6) {
-                        let t = trees[0].object.parent; t.scale.multiplyScalar(0.92); this.stats.wood += 5;
-                        if(t.scale.x < 0.35) { this.scene.remove(t); this.trees = this.trees.filter(x => x !== t); this.collidableMeshes = this.collidableMeshes.filter(c => c !== t.children[0]); }
-                        this.updateUI(); return;
-                    }
-                } else if(this.ghost && this.ghost.position.y > -10 && item.q > 0) {
-                    this.placeStructure(this.ghost.position, this.ghost.rotation, item.id);
-                    item.q--; this.updateUI();
-                }
-            }
-
-            placeStructure(pos, rot, type) {
-                const g = new THREE.Group();
-                if(type === 'stairs') {
-                    for(let k=0; k<10; k++) {
-                        const s = new THREE.Mesh(new THREE.BoxGeometry(4, 0.4, 0.4), new THREE.MeshStandardMaterial({ color: 0x5d4037 }));
-                        s.position.set(0, k*0.4, k*0.4); g.add(s); this.collidableMeshes.push(s);
-                    }
-                } else {
-                    const sizes = { base: [4, 0.5, 4], wall: [4, 4, 0.2], roof: [4, 0.2, 4] };
-                    const m = new THREE.Mesh(new THREE.BoxGeometry(...sizes[type]), new THREE.MeshStandardMaterial({ color: 0x5d4037 }));
-                    g.add(m); this.collidableMeshes.push(m);
-                }
-                g.position.copy(pos); g.rotation.copy(rot); g.name = "SOLID_" + type;
-                this.scene.add(g);
-                this.objects.placed.push({ pos: pos.clone(), rot: rot.clone(), type: type, mesh: g });
-            }
-
-            updateUI() {
-                document.getElementById('hp-f').style.width = this.stats.hp + '%';
-                document.getElementById('hg-f').style.width = this.stats.hunger + '%';
-                document.getElementById('ts-f').style.width = this.stats.thirst + '%';
-                document.getElementById('wood').innerText = 'WOOD: ' + Math.floor(this.stats.wood);
-                for(let i=1; i<5; i++) document.getElementById('q'+i).innerText = this.items[i].q;
-                
-                const p = this.camera.position;
-                document.getElementById('coords-bar').innerText = `X: ${p.x.toFixed(1)} | Y: ${p.y.toFixed(1)} | Z: ${p.z.toFixed(1)}`;
-            }
-
-            // --- SAVING ---
-            saveToLocal() {
-                const data = {
-                    stats: this.stats,
-                    inv: this.items.map(i => ({id: i.id, q: i.q})),
-                    pos: this.camera.position,
-                    rot: { yaw: this.yaw, pitch: this.pitch },
-                    buildings: this.objects.placed.map(b => ({ pos: b.pos, rot: b.rot, type: b.type }))
-                };
-                localStorage.setItem('arena_survival_save', JSON.stringify(data));
-                document.getElementById('save-status').innerText = "Last saved: " + new Date().toLocaleTimeString();
-            }
-
-            loadFromLocal() {
-                const raw = localStorage.getItem('arena_survival_save');
-                if(!raw) return;
-                const data = JSON.parse(raw);
+            startSession(data) {
                 this.stats = data.stats;
-                data.inv.forEach((item, i) => this.items[i].q = item.q);
-                this.camera.position.copy(data.pos);
-                this.yaw = data.rot.yaw; this.pitch = data.rot.pitch;
-                data.buildings.forEach(b => this.placeStructure(new THREE.Vector3().copy(b.pos), new THREE.Euler().copy(b.rot), b.type));
-                this.updateUI();
+                this.camera.position.set(data.pos.x, data.pos.y, data.pos.z);
+                this.isLocked = true;
+                document.body.requestPointerLock();
+                
+                this.socket.emit('join-game', {
+                    name: this.account,
+                    pos: this.camera.position,
+                    rot: { yaw: this.yaw, pitch: this.pitch }
+                });
+
+                // Auto-save every 10 seconds
+                setInterval(() => {
+                    if(this.account) {
+                        this.socket.emit('save-progress', {
+                            username: this.account,
+                            stats: this.stats,
+                            pos: this.camera.position
+                        });
+                    }
+                }, 10000);
             }
 
-            saveToCloud() {
-                alert("Cloud save requires Supabase Config. Check the generated ZIP for instructions on adding your Supabase API keys!");
-                this.saveToLocal();
+            setupMultiplayer() {
+                this.socket.on('init-world', (data) => {
+                    Object.values(data.players).forEach(p => {
+                        if(p.id !== this.socket.id) this.createPlayerModel(p);
+                    });
+                });
+
+                this.socket.on('player-joined', (p) => this.createPlayerModel(p));
+                
+                this.socket.on('player-moved', (data) => {
+                    const m = this.remotePlayers[data.id];
+                    if(m) {
+                        m.position.copy(data.pos);
+                        m.rotation.y = data.rot.yaw;
+                    }
+                });
+
+                this.socket.on('player-left', (id) => {
+                    if(this.remotePlayers[id]) {
+                        this.scene.remove(this.remotePlayers[id]);
+                        delete this.remotePlayers[id];
+                    }
+                });
+
+                this.socket.on('interact-receive', (data) => {
+                    this.showMessage(data.from.toUpperCase() + " waved at you!");
+                });
             }
 
-            isColliding(pos) {
-                const pBox = new THREE.Box3().setFromCenterAndSize(pos.clone().setY(pos.y - 0.8), new THREE.Vector3(0.5, 1.5, 0.5));
-                const pBottom = pos.y - 1.7;
-                for(let m of this.collidableMeshes) {
-                    if(m.name === "GROUND") continue;
-                    const mBox = new THREE.Box3().setFromObject(m);
-                    if(pBox.intersectsBox(mBox)) {
-                        if(mBox.max.y - pBottom < 0.8) continue;
-                        return true;
+            createPlayerModel(p) {
+                const g = new THREE.Group();
+                const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.6, 0.4), new THREE.MeshStandardMaterial({ color: 0x3498db }));
+                body.position.y = 0.8;
+                g.add(body);
+                const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshStandardMaterial({ color: 0xffdbac }));
+                head.position.y = 1.9;
+                g.add(head);
+                
+                g.position.copy(p.pos);
+                g.name = "REMOTE_PLAYER";
+                g.userData = { id: p.id, name: p.name };
+                this.scene.add(g);
+                this.remotePlayers[p.id] = g;
+            }
+
+            showMessage(text) {
+                const msg = document.getElementById('interaction-msg');
+                msg.innerText = text;
+                msg.style.display = 'block';
+                setTimeout(() => msg.style.display = 'none', 4000);
+            }
+
+            actInteraction() {
+                this.raycaster.setFromCamera(new THREE.Vector2(0, 0), this.camera);
+                const intersects = this.raycaster.intersectObjects(Object.values(this.remotePlayers), true);
+                if (intersects.length > 0 && intersects[0].distance < 5) {
+                    let target = intersects[0].object;
+                    while(target.parent && target.name !== "REMOTE_PLAYER") target = target.parent;
+                    if(target.name === "REMOTE_PLAYER") {
+                        this.socket.emit('interact', target.userData.id);
+                        this.showMessage("Interacted with " + target.userData.name);
                     }
                 }
-                return false;
             }
 
             animate() {
                 requestAnimationFrame(() => this.animate());
                 const dt = Math.min(this.clock.getDelta(), 0.1);
-                if(this.isLocked) {
-                    this.velocity.x -= this.velocity.x * 12 * dt;
-                    this.velocity.z -= this.velocity.z * 12 * dt;
-                    this.velocity.y -= 35 * dt;
-
-                    const move = new THREE.Vector3();
-                    if(this.keys['KeyW']) move.z -= 1; if(this.keys['KeyS']) move.z += 1;
-                    if(this.keys['KeyA']) move.x -= 1; if(this.keys['KeyD']) move.x += 1;
-                    move.normalize().applyQuaternion(this.camera.quaternion); move.y = 0;
-                    this.velocity.addScaledVector(move, 70 * dt);
-
-                    const nextX = this.camera.position.clone(); nextX.x += this.velocity.x * dt;
-                    if(!this.isColliding(nextX)) this.camera.position.x = nextX.x;
-                    const nextZ = this.camera.position.clone(); nextZ.z += this.velocity.z * dt;
-                    if(!this.isColliding(nextZ)) this.camera.position.z = nextZ.z;
-
-                    this.camera.position.y += this.velocity.y * dt;
-                    const downRay = new THREE.Raycaster(this.camera.position, new THREE.Vector3(0, -1, 0), 0, 4);
-                    const floorHits = downRay.intersectObjects(this.collidableMeshes);
-                    let floorY = (floorHits.length > 0) ? floorHits[0].point.y + 1.7 : 1.7;
-                    if(this.camera.position.y < floorY) { this.camera.position.y = floorY; this.velocity.y = 0; if(this.keys['Space']) this.velocity.y = 11; }
-
-                    if(this.ghost) {
-                        this.raycaster.setFromCamera(new THREE.Vector2(0, 0), this.camera);
-                        const hit = this.raycaster.intersectObjects(this.scene.children, true).find(i => i.object !== this.ghost && !this.ghost.children.includes(i.object));
-                        if(hit && hit.distance < 12) {
-                            const p = hit.point; const id = this.items[this.selected].id;
-                            if(id === 'base') this.ghost.position.set(Math.round(p.x/4)*4, p.y + 0.25, Math.round(p.z/4)*4);
-                            else if(id === 'wall') this.ghost.position.set(p.x, p.y + 2, p.z);
-                            else this.ghost.position.set(p.x, p.y + 0.15, p.z);
-                        } else this.ghost.position.y = -100;
-                    }
-                    this.stats.hunger -= 0.05 * dt; this.stats.thirst -= 0.08 * dt;
+                
+                if(this.isLocked && document.pointerLockElement) {
+                    this.handleMovement(dt);
                     this.updateUI();
+                    
+                    if(Math.random() > 0.8) {
+                        this.socket.emit('move', {
+                            pos: this.camera.position,
+                            rot: { yaw: this.yaw, pitch: this.pitch }
+                        });
+                    }
                 }
                 this.renderer.render(this.scene, this.camera);
+            }
+
+            handleMovement(dt) {
+                this.velocity.x -= this.velocity.x * 10 * dt;
+                this.velocity.z -= this.velocity.z * 10 * dt;
+                this.velocity.y -= 30 * dt;
+
+                const move = new THREE.Vector3();
+                if(this.keys['KeyW']) move.z -= 1; if(this.keys['KeyS']) move.z += 1;
+                if(this.keys['KeyA']) move.x -= 1; if(this.keys['KeyD']) move.x += 1;
+                move.normalize().applyQuaternion(this.camera.quaternion); move.y = 0;
+                this.velocity.addScaledVector(move, 65 * dt);
+
+                this.camera.position.addScaledVector(this.velocity, dt);
+                if(this.camera.position.y < 2) { 
+                    this.camera.position.y = 2; this.velocity.y = 0; 
+                    if(this.keys['Space']) this.velocity.y = 11;
+                }
+            }
+
+            updateUI() {
+                const p = this.camera.position;
+                document.getElementById('coords').innerText = `X: ${p.x.toFixed(0)} | Y: ${p.y.toFixed(0)} | Z: ${p.z.toFixed(0)}`;
+                document.getElementById('hp-f').style.width = this.stats.hp + '%';
+            }
+
+            setupEvents() {
+                window.onkeydown = (e) => {
+                    this.keys[e.code] = true;
+                    if (e.code === 'KeyF') this.actInteraction();
+                    if (e.code === 'KeyL') document.body.requestPointerLock();
+                };
+                window.onkeyup = (e) => this.keys[e.code] = false;
+                
+                document.addEventListener('pointerlockchange', () => {
+                    this.isLocked = !!document.pointerLockElement;
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if(!document.pointerLockElement) return;
+                    this.yaw -= e.movementX * 0.002;
+                    this.pitch -= e.movementY * 0.002;
+                    this.pitch = Math.max(-1.5, Math.min(1.5, this.pitch));
+                    this.camera.quaternion.setFromEuler(new THREE.Euler(this.pitch, this.yaw, 0, 'YXZ'));
+                });
             }
         }
         window.onload = () => window.game = new SurvivalGame();
