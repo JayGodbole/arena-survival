@@ -1,0 +1,14 @@
+{
+  "name": "arena-survival-multiplayer",
+  "version": "4.0.0",
+  "description": "3D Survival Builder Game with Node.js Server",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "three": "^0.128.0"
+  }
+}
