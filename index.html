@@ -3,80 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARENA SURVIVAL - ULTRA STABLE</title>
+    <title>ARENA SURVIVAL - THE FINAL CHAPTER</title>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: 'Segoe UI', sans-serif; }
         canvas { display: block; width: 100%; height: 100%; }
-        #ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; color: white; }
+        #ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; color: white; }
         
-        #auth { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: auto; z-index: 100; }
-        .box { background: #111; padding: 30px; border: 2px solid #2ecc71; border-radius: 10px; width: 300px; text-align: center; }
-        input { width: 100%; padding: 10px; margin: 10px 0; background: #222; color: white; border: 1px solid #444; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #2ecc71; border: none; color: white; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        /* OVERLAYS */
+        #auth-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.98)); display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: auto; z-index: 1000; }
+        #resume-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; pointer-events: auto; z-index: 500; }
+        .box { background: rgba(255,255,255,0.05); padding: 40px; border-radius: 20px; border: 2px solid #2ecc71; text-align: center; width: 320px; box-shadow: 0 0 30px rgba(46, 204, 113, 0.2); }
         
-        #hud { position: absolute; bottom: 20px; left: 20px; width: 180px; }
-        .bar { width: 100%; height: 10px; background: rgba(0,0,0,0.5); border: 1px solid #333; margin-bottom: 5px; border-radius: 5px; overflow: hidden; }
+        /* UI ELEMENTS */
+        #coords { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); font-family: monospace; color: #2ecc71; background: rgba(0,0,0,0.6); padding: 5px 15px; border-radius: 20px; border: 1px solid #333; font-size: 14px; }
+        #wood { position: absolute; top: 15px; right: 20px; font-size: 26px; color: #ffa502; font-weight: bold; text-shadow: 2px 2px black; }
+        #settings-btn { position: absolute; top: 15px; left: 15px; padding: 10px 18px; background: rgba(0,0,0,0.7); border: 1px solid #2ecc71; color: white; border-radius: 8px; cursor: pointer; pointer-events: auto; font-size: 13px; }
+        #settings-menu { position: absolute; top: 70px; left: 15px; width: 250px; background: rgba(0,0,0,0.95); border: 2px solid #2ecc71; padding: 20px; border-radius: 12px; display: none; pointer-events: auto; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        
+        /* INPUTS & BUTTONS */
+        input { width: 100%; padding: 14px; margin: 12px 0; background: #111; border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; outline: none; }
+        input:focus { border-color: #2ecc71; }
+        button.p-btn { width: 100%; padding: 14px; background: #2ecc71; border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.2s; }
+        button.p-btn:hover { background: #27ae60; transform: scale(1.02); }
+        
+        /* HUD & BARS */
+        #hud { position: absolute; bottom: 30px; left: 30px; width: 220px; }
+        .bar { width: 100%; height: 14px; background: rgba(0,0,0,0.6); border: 1px solid #444; margin-bottom: 10px; border-radius: 7px; overflow: hidden; }
         .fill { height: 100%; width: 100%; transition: width 0.3s; }
-        #coords { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px; font-size: 12px; border: 1px solid #2ecc71; }
-        #wood { position: absolute; top: 10px; right: 20px; color: #ffa502; font-weight: bold; font-size: 20px; }
         
-        #inv { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; pointer-events: auto; }
-        .slot { width: 55px; height: 55px; background: rgba(0,0,0,0.7); border: 2px solid #444; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 20px; position: relative; }
-        .slot.active { border-color: #2ecc71; background: rgba(46, 204, 113, 0.2); }
-        .qty { position: absolute; bottom: 2px; right: 4px; font-size: 10px; color: #2ecc71; font-weight: bold; }
-        #msg { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); background: rgba(46, 204, 113, 0.9); padding: 10px 20px; border-radius: 5px; display: none; }
-        #cross { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 10px; height: 10px; border: 1px solid white; border-radius: 50%; opacity: 0.5; }
+        #inv { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; pointer-events: auto; }
+        .slot { width: 65px; height: 65px; background: rgba(0,0,0,0.8); border: 2px solid #555; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 28px; position: relative; transition: 0.2s; }
+        .slot.active { border-color: #2ecc71; transform: scale(1.15); box-shadow: 0 0 15px rgba(46, 204, 113, 0.3); }
+        .qty { position: absolute; bottom: 4px; right: 6px; font-size: 12px; font-weight: bold; color: #2ecc71; }
+        
+        #cross { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 14px; height: 14px; border: 1px solid white; border-radius: 50%; opacity: 0.6; }
+        #msg-box { position: absolute; top: 25%; left: 50%; transform: translate(-50%, -50%); background: rgba(46, 204, 113, 0.9); padding: 12px 25px; border-radius: 12px; display: none; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div id="auth">
-        <h1 style="color:#2ecc71; margin-bottom: 0;">ARENA SURVIVAL</h1>
-        <p style="color:#555; font-size: 12px; margin-bottom: 30px;">ULTRA STABLE MULTIPLAYER</p>
+    <!-- 1. AUTH OVERLAY -->
+    <div id="auth-overlay">
+        <h1 style="color:#2ecc71; font-size: 54px; margin-bottom: 5px;">ARENA SURVIVAL</h1>
+        <p style="color:#666; letter-spacing: 2px; margin-bottom: 40px;">THE GLOBAL SURVIVOR NETWORK</p>
         <div class="box">
-            <h3 id="t">CREATE ACCOUNT</h3>
-            <input type="text" id="u" placeholder="Name">
-            <input type="password" id="p" placeholder="Password">
-            <button id="sub">START SURVIVAL</button>
-            <p style="font-size: 11px; color: #888; margin-top: 15px; cursor: pointer;" id="sw">Switch to Login</p>
+            <h3 id="auth-title">CREATE ACCOUNT</h3>
+            <input type="text" id="u-in" placeholder="Survivor Name">
+            <input type="password" id="p-in" placeholder="Password">
+            <button class="p-btn" id="auth-submit">START JOURNEY</button>
+            <p style="font-size: 12px; color: #888; margin-top: 20px; cursor: pointer;" id="auth-sw">Already have a character? <b>Login Here</b></p>
         </div>
     </div>
 
+    <!-- 2. RESUME OVERLAY -->
+    <div id="resume-overlay">
+        <h2 style="color:white; letter-spacing: 2px; text-shadow: 0 0 10px #2ecc71;">CLICK TO RESUME</h2>
+    </div>
+
+    <!-- 3. GAME UI -->
     <div id="ui">
-        <div id="coords">X: 0 Y: 0 Z: 0</div>
+        <div id="coords">X: 0 | Y: 0 | Z: 0</div>
         <div id="wood">WOOD: 50</div>
         <div id="cross"></div>
-        <div id="msg"></div>
-        <div id="hud"><div class="bar"><div id="hp-f" class="fill" style="background:#ff4757"></div></div></div>
+        <div id="msg-box"></div>
+        
+        <button id="settings-btn">⚙️ SETTINGS</button>
+        <div id="settings-menu">
+            <h4 style="margin:0 0 10px 0; color:#2ecc71;">GAME SETTINGS</h4>
+            <label style="font-size:12px; display:block; margin-bottom:15px; cursor:pointer;">
+                <input type="checkbox" id="double-tap-toggle"> Double Click to Lock/Unlock
+            </label>
+            <div style="font-size:12px; margin-bottom:20px;">
+                Mouse Sensitivity: <span id="sens-val" style="color:#2ecc71;">30</span><br>
+                <input type="range" id="sens-slider" min="1" max="100" value="30" style="width:100%; margin-top:10px;">
+            </div>
+            <button style="width:100%; padding:8px; background:#333; border:none; color:white; border-radius:6px; cursor:pointer;" onclick="document.getElementById('settings-menu').style.display='none'">CLOSE</button>
+        </div>
+
+        <div id="hud">
+            <div class="bar"><div id="hp-f" class="fill" style="background:#ff4757"></div></div>
+        </div>
+
         <div id="inv">
-            <div class="slot active" id="sl0">🪓</div>
-            <div class="slot" id="sl1">🧱<span id="q1" class="qty">5</span></div>
-            <div class="slot" id="sl2">🧱<span id="q2" class="qty">5</span></div>
-            <div class="slot" id="sl3">📐<span id="q3" class="qty">5</span></div>
-            <div class="slot" id="sl4">🪜<span id="q4" class="qty">5</span></div>
+            <div class="slot active" id="sl0" onclick="game.selectSlot(0)">🪓</div>
+            <div class="slot" id="sl1" onclick="game.selectSlot(1)">🧱<span id="q1" class="qty">5</span></div>
+            <div class="slot" id="sl2" onclick="game.selectSlot(2)">🧱<span id="q2" class="qty">5</span></div>
+            <div class="slot" id="sl3" onclick="game.selectSlot(3)">📐<span id="q3" class="qty">5</span></div>
+            <div class="slot" id="sl4" onclick="game.selectSlot(4)">🪜<span id="q4" class="qty">5</span></div>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        class Game {
+        class ArenaSurvival {
             constructor() {
-                this.isLocked = false;
-                this.mode = 'reg';
-                this.stats = { hp: 100, wood: 50 };
-                this.inv = [1, 5, 5, 5, 5];
-                this.keys = {};
-                this.yaw = 0; this.pitch = 0;
-                this.vel = new THREE.Vector3();
-                this.remotePlayers = {};
-                this.solids = [];
-                this.trees = [];
-                this.ghost = null;
-                this.selected = 0;
+                this.isLocked = false; this.authMode = 'reg'; this.user = null;
+                this.stats = { hp: 100, wood: 50 }; this.items = [1, 5, 5, 5, 5];
+                this.keys = {}; this.yaw = 0; this.pitch = 0; this.selected = 0;
+                this.sensitivity = 30; this.dtEnabled = false; this.lastClick = 0;
+                this.vel = new THREE.Vector3(); this.remotePlayers = {}; 
+                this.solids = []; this.trees = []; this.ghost = null;
                 this.socket = typeof io !== 'undefined' ? io() : null;
 
                 this.initEngine();
                 this.setupAuth();
+                this.setupSettings();
                 this.setupWorld();
                 this.animate();
             }
@@ -88,6 +119,7 @@
                 this.renderer = new THREE.WebGLRenderer({ antialias: true });
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
                 this.renderer.shadowMap.enabled = true;
+                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
                 document.body.appendChild(this.renderer.domElement);
 
                 this.scene.add(new THREE.AmbientLight(0xffffff, 0.7));
@@ -105,74 +137,98 @@
                     if(e.code === 'KeyE') this.craft();
                     if(e.code === 'KeyF') this.interact();
                     if(e.code.startsWith('Digit')) {
-                        let idx = parseInt(e.code.replace('Digit',''))-1;
-                        if(idx >= 0 && idx < 5) this.selectSlot(idx);
+                        let i = parseInt(e.code.replace('Digit',''))-1;
+                        if(i >= 0 && i < 5) this.selectSlot(i);
                     }
                 };
                 window.onkeyup = (e) => this.keys[e.code] = false;
-                window.onmousedown = (e) => { if(this.isLocked) this.act(); };
-                document.addEventListener('pointerlockchange', () => this.isLocked = (document.pointerLockElement === document.body));
+                
+                document.addEventListener('pointerlockchange', () => {
+                    this.isLocked = (document.pointerLockElement === document.body);
+                    document.getElementById('resume-overlay').style.display = (this.user && !this.isLocked) ? 'flex' : 'none';
+                });
+
                 document.addEventListener('mousemove', (e) => {
                     if(!this.isLocked) return;
-                    this.yaw -= e.movementX * 0.002;
-                    this.pitch -= e.movementY * 0.002;
+                    const factor = this.sensitivity * 0.00007;
+                    this.yaw -= e.movementX * factor;
+                    this.pitch -= e.movementY * factor;
                     this.pitch = Math.max(-1.5, Math.min(1.5, this.pitch));
                     this.camera.quaternion.setFromEuler(new THREE.Euler(this.pitch, this.yaw, 0, 'YXZ'));
                 });
             }
 
             setupAuth() {
-                const sw = document.getElementById('sw');
-                const sub = document.getElementById('sub');
+                const sw = document.getElementById('auth-sw');
+                const sub = document.getElementById('auth-submit');
                 sw.onclick = () => {
-                    this.mode = this.mode === 'reg' ? 'log' : 'reg';
-                    document.getElementById('t').innerText = this.mode === 'reg' ? 'CREATE ACCOUNT' : 'LOGIN';
-                    sw.innerText = this.mode === 'reg' ? 'Switch to Login' : 'Switch to Create Account';
+                    this.authMode = this.authMode === 'reg' ? 'log' : 'reg';
+                    document.getElementById('auth-title').innerText = this.authMode === 'reg' ? 'CREATE ACCOUNT' : 'LOGIN SURVIVOR';
+                    sw.innerHTML = this.authMode === 'reg' ? 'Already have a character? <b>Login Here</b>' : 'New here? <b>Create Account</b>';
                 };
                 sub.onclick = () => {
-                    const user = document.getElementById('u').value;
-                    const pass = document.getElementById('p').value;
-                    if(!user || !pass) return alert("Fill all fields");
-                    if(this.socket) this.socket.emit('auth-request', { user, pass, type: this.mode });
-                    else this.startLocally();
+                    const user = document.getElementById('u-in').value;
+                    const pass = document.getElementById('p-in').value;
+                    if(!user || !pass) return alert("Fill Name and Password");
+                    if(this.socket) this.socket.emit('auth-request', { user, pass, type: this.authMode });
                 };
                 if(this.socket) {
                     this.socket.on('auth-res', (res) => {
                         if(res.success) {
-                            this.user = res.user;
-                            this.stats = res.data.stats;
+                            this.user = res.user; this.stats = res.data.stats;
                             this.camera.position.set(res.data.pos.x, res.data.pos.y, res.data.pos.z);
-                            document.getElementById('auth').style.display = 'none';
+                            document.getElementById('auth-overlay').style.display = 'none';
                             document.body.requestPointerLock();
                             this.socket.emit('join', { name: this.user, pos: this.camera.position, yaw: this.yaw });
                             this.setupMultiplayer();
+                            setInterval(() => this.autoSave(), 10000);
                         } else alert(res.msg);
                     });
                 }
             }
 
+            setupSettings() {
+                document.getElementById('settings-btn').onclick = () => {
+                    const m = document.getElementById('settings-menu');
+                    m.style.display = m.style.display === 'block' ? 'none' : 'block';
+                };
+                const slider = document.getElementById('sens-slider');
+                slider.oninput = (e) => {
+                    this.sensitivity = parseInt(e.target.value);
+                    document.getElementById('sens-val').innerText = this.sensitivity;
+                };
+                document.getElementById('double-tap-toggle').onchange = (e) => this.dtEnabled = e.target.checked;
+                window.addEventListener('mousedown', (e) => {
+                    if(this.user && !this.isLocked && !document.getElementById('settings-menu').contains(e.target)) {
+                        document.body.requestPointerLock();
+                    } else if(this.isLocked) {
+                        if(this.dtEnabled) {
+                            const now = Date.now();
+                            if(now - this.lastClick < 300) document.exitPointerLock();
+                            this.lastClick = now;
+                        }
+                        this.act();
+                    }
+                });
+            }
+
             setupMultiplayer() {
                 this.socket.on('init-world', (data) => {
                     Object.values(data.players).forEach(p => { if(p.id !== this.socket.id) this.spawnRemote(p); });
-                    data.buildings.forEach(b => this.place(b.pos, b.rot, b.type, false));
+                    data.buildings.forEach(b => this.place(b.pos, b.rot, b.type));
                 });
                 this.socket.on('p-joined', (p) => this.spawnRemote(p));
                 this.socket.on('p-moved', (d) => { if(this.remotePlayers[d.id]) { this.remotePlayers[d.id].position.copy(d.pos); this.remotePlayers[d.id].rotation.y = d.yaw; } });
                 this.socket.on('p-left', (id) => { if(this.remotePlayers[id]) { this.scene.remove(this.remotePlayers[id]); delete this.remotePlayers[id]; } });
-                this.socket.on('b-placed', (b) => this.place(b.pos, b.rot, b.type, false));
-                this.socket.on('p-interact', (from) => {
-                    const m = document.getElementById('msg');
-                    m.innerText = from + " is near you!"; m.style.display = 'block';
-                    setTimeout(() => m.style.display = 'none', 3000);
-                });
+                this.socket.on('b-placed', (b) => this.place(b.pos, b.rot, b.type));
+                this.socket.on('p-interact', (from) => this.showMsg(from + " waved!"));
             }
 
             spawnRemote(p) {
                 const g = new THREE.Group();
-                const b = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.6, 0.4), new THREE.MeshStandardMaterial({color: 0x3498db}));
-                b.position.y = 0.8; g.add(b);
+                g.add(new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.6, 0.4), new THREE.MeshStandardMaterial({color: 0x3498db})));
                 const h = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshStandardMaterial({color: 0xffdbac}));
-                h.position.y = 1.9; g.add(h);
+                h.position.y = 1.1; g.add(h);
                 g.position.copy(p.pos); g.rotation.y = p.yaw;
                 this.scene.add(g); this.remotePlayers[p.id] = g;
             }
@@ -180,15 +236,18 @@
             setupWorld() {
                 const gr = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), new THREE.MeshStandardMaterial({color: 0x3b7d32}));
                 gr.rotation.x = -Math.PI/2; gr.receiveShadow = true; this.scene.add(gr); this.solids.push(gr);
-                for(let i=0; i<50; i++) this.spawnTree((Math.random()-0.5)*400, (Math.random()-0.5)*400);
+                for(let i=0; i<40; i++) this.spawnTree((Math.random()-0.5)*400, (Math.random()-0.5)*400);
             }
 
             spawnTree(x, z) {
                 const g = new THREE.Group();
-                const t = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.5, 6), new THREE.MeshStandardMaterial({color: 0x4b2d13}));
+                const t = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.6, 6), new THREE.MeshStandardMaterial({color: 0x4b2d13}));
                 t.position.y = 3; t.castShadow = true; g.add(t);
-                const l = new THREE.Mesh(new THREE.ConeGeometry(3, 7, 8), new THREE.MeshStandardMaterial({color: 0x1b5e20}));
-                l.position.y = 7; g.add(l);
+                for(let i=0; i<6; i++) {
+                    const l = new THREE.Mesh(new THREE.DodecahedronGeometry(2, 0), new THREE.MeshStandardMaterial({color: 0x1b5e20}));
+                    l.position.set((Math.random()-0.5)*3, 4 + Math.random()*4, (Math.random()-0.5)*3);
+                    l.castShadow = true; g.add(l);
+                }
                 g.position.set(x, 0, z); g.name = "TREE";
                 this.scene.add(g); this.trees.push(g); this.solids.push(t);
             }
@@ -198,43 +257,40 @@
                 if(this.ghost) { this.scene.remove(this.ghost); this.ghost = null; }
                 if(i > 0) {
                     const ids = ['','base','wall','roof','stairs'];
-                    const type = ids[i];
                     const g = new THREE.Group();
-                    if(type === 'stairs') {
+                    if(ids[i] === 'stairs') {
                         for(let k=0; k<10; k++) {
                             const s = new THREE.Mesh(new THREE.BoxGeometry(4, 0.4, 0.4), new THREE.MeshStandardMaterial({color:0xffffff, transparent:true, opacity:0.4}));
                             s.position.set(0, k*0.4, k*0.4); g.add(s);
                         }
                     } else {
                         const sz = {base:[4,0.5,4], wall:[4,4,0.2], roof:[4,0.2,4]};
-                        g.add(new THREE.Mesh(new THREE.BoxGeometry(...sz[type]), new THREE.MeshStandardMaterial({color:0xffffff, transparent:true, opacity:0.4})));
+                        g.add(new THREE.Mesh(new THREE.BoxGeometry(...sz[ids[i]]), new THREE.MeshStandardMaterial({color:0xffffff, transparent:true, opacity:0.4})));
                     }
                     this.ghost = g; this.scene.add(g);
                 }
                 document.querySelectorAll('.slot').forEach((s, idx) => s.classList.toggle('active', idx === i));
             }
 
-            craft() { if(this.selected > 0 && this.stats.wood >= 10) { this.stats.wood -= 10; this.inv[this.selected]++; this.updateUI(); } }
+            craft() { if(this.selected > 0 && this.stats.wood >= 10) { this.stats.wood -= 10; this.items[this.selected]++; this.updateUI(); } }
 
             act() {
                 this.ray.setFromCamera(new THREE.Vector2(0,0), this.camera);
-                const ids = ['','base','wall','roof','stairs'];
                 if(this.selected === 0) {
                     const hits = this.ray.intersectObjects(this.trees, true);
                     if(hits[0] && hits[0].distance < 6) {
-                        let t = hits[0].object.parent; t.scale.multiplyScalar(0.9); this.stats.wood += 5;
+                        let t = hits[0].object.parent; t.scale.multiplyScalar(0.92); this.stats.wood += 5;
                         if(t.scale.x < 0.4) { this.scene.remove(t); this.trees = this.trees.filter(x => x !== t); }
                     }
-                } else if(this.ghost && this.inv[this.selected] > 0) {
-                    const bData = { pos: this.ghost.position.clone(), rot: this.ghost.rotation.clone(), type: ids[this.selected] };
+                } else if(this.ghost && this.items[this.selected] > 0) {
+                    const bData = { pos: this.ghost.position.clone(), rot: this.ghost.rotation.clone(), type: ['','base','wall','roof','stairs'][this.selected] };
                     if(this.socket) this.socket.emit('build', bData);
-                    else this.place(bData.pos, bData.rot, bData.type, true);
-                    this.inv[this.selected]--;
+                    this.items[this.selected]--;
                 }
                 this.updateUI();
             }
 
-            place(pos, rot, type, local) {
+            place(pos, rot, type) {
                 const g = new THREE.Group();
                 const mat = new THREE.MeshStandardMaterial({color: 0x5d4037});
                 if(type === 'stairs') {
@@ -247,8 +303,7 @@
                     const m = new THREE.Mesh(new THREE.BoxGeometry(...sz[type]), mat);
                     g.add(m); this.solids.push(m);
                 }
-                g.position.copy(pos); g.rotation.copy(rot);
-                this.scene.add(g);
+                g.position.copy(pos); g.rotation.copy(rot); this.scene.add(g);
             }
 
             interact() {
@@ -260,12 +315,35 @@
                 }
             }
 
+            autoSave() {
+                if(this.socket && this.user) {
+                    this.socket.emit('save-progress', { user: this.user, stats: this.stats, pos: this.camera.position });
+                }
+            }
+
+            showMsg(t) {
+                const m = document.getElementById('msg-box'); m.innerText = t; m.style.display = 'block';
+                setTimeout(() => m.style.display = 'none', 3000);
+            }
+
             updateUI() {
                 document.getElementById('hp-f').style.width = this.stats.hp + '%';
                 document.getElementById('wood').innerText = 'WOOD: ' + Math.floor(this.stats.wood);
-                for(let i=1; i<5; i++) document.getElementById('q'+i).innerText = this.inv[i];
+                for(let i=1; i<5; i++) document.getElementById('q'+i).innerText = this.items[i];
                 const p = this.camera.position;
-                document.getElementById('coords').innerText = `X: ${p.x.toFixed(0)} Y: ${p.y.toFixed(0)} Z: ${p.z.toFixed(0)}`;
+                document.getElementById('coords').innerText = `X: ${p.x.toFixed(0)} | Y: ${p.y.toFixed(0)} | Z: ${p.z.toFixed(0)}`;
+            }
+
+            checkCollision(pos) {
+                const pBox = new THREE.Box3().setFromCenterAndSize(pos.clone().setY(pos.y-0.8), new THREE.Vector3(0.6, 1.5, 0.6));
+                for(let s of this.solids) {
+                    const mBox = new THREE.Box3().setFromObject(s);
+                    if(pBox.intersectsBox(mBox)) {
+                        if(mBox.max.y - (pos.y-1.7) < 0.85) continue;
+                        return true;
+                    }
+                }
+                return false;
             }
 
             animate() {
@@ -277,17 +355,16 @@
                     if(this.keys['KeyW']) move.z -= 1; if(this.keys['KeyS']) move.z += 1;
                     if(this.keys['KeyA']) move.x -= 1; if(this.keys['KeyD']) move.x += 1;
                     move.normalize().applyQuaternion(this.camera.quaternion); move.y = 0;
-                    this.vel.addScaledVector(move, 60 * dt);
+                    this.vel.addScaledVector(move, 65 * dt);
 
-                    // Physical Movement
                     const nextX = this.camera.position.clone(); nextX.x += this.vel.x * dt;
                     if(!this.checkCollision(nextX)) this.camera.position.x = nextX.x;
                     const nextZ = this.camera.position.clone(); nextZ.z += this.vel.z * dt;
                     if(!this.checkCollision(nextZ)) this.camera.position.z = nextZ.z;
 
                     this.camera.position.y += this.vel.y * dt;
-                    const floorHits = new THREE.Raycaster(this.camera.position, new THREE.Vector3(0,-1,0), 0, 4).intersectObjects(this.solids);
-                    let floorY = floorHits[0] ? floorHits[0].point.y + 1.7 : 1.7;
+                    const hits = new THREE.Raycaster(this.camera.position, new THREE.Vector3(0,-1,0), 0, 4).intersectObjects(this.solids);
+                    let floorY = hits[0] ? hits[0].point.y + 1.7 : 1.7;
                     if(this.camera.position.y < floorY) { this.camera.position.y = floorY; this.vel.y = 0; if(this.keys['Space']) this.vel.y = 11; }
 
                     if(this.ghost) {
@@ -297,7 +374,7 @@
                             const p = hit.point; const ids = ['','base','wall','roof','stairs'];
                             const id = ids[this.selected];
                             if(id === 'base') this.ghost.position.set(Math.round(p.x/4)*4, p.y + 0.25, Math.round(p.z/4)*4);
-                            else this.ghost.position.set(p.x, p.y + (id==='wall'?2:0.2), p.z);
+                            else this.ghost.position.set(p.x, p.y + (id==='wall'?2:0.15), p.z);
                         } else this.ghost.position.y = -100;
                     }
                     if(this.socket && Math.random() > 0.9) this.socket.emit('move', { pos: this.camera.position, yaw: this.yaw });
@@ -305,20 +382,8 @@
                 }
                 this.renderer.render(this.scene, this.camera);
             }
-
-            checkCollision(pos) {
-                const pBox = new THREE.Box3().setFromCenterAndSize(pos.clone().setY(pos.y-0.8), new THREE.Vector3(0.6, 1.5, 0.6));
-                for(let s of this.solids) {
-                    if(s.name === "GROUND") continue;
-                    if(pBox.intersectsBox(new THREE.Box3().setFromObject(s))) {
-                        if(new THREE.Box3().setFromObject(s).max.y - (pos.y-1.7) < 0.8) continue;
-                        return true;
-                    }
-                }
-                return false;
-            }
         }
-        window.onload = () => window.game = new Game();
+        window.onload = () => window.game = new ArenaSurvival();
     </script>
 </body>
 </html>
