@@ -1,0 +1,26 @@
+HOW TO DEPLOY ARENA SURVIVAL
+
+1. GITHUB & RENDER:
+   - Upload all files in this ZIP to a new GitHub Repository.
+   - Go to Render.com and create a new "Static Site".
+   - Connect your GitHub repo.
+   - Your game will be live at a URL like https://arena-survival.onrender.com
+
+2. SUPABASE (For Real Multiplayer & Cloud Saves):
+   - Create a free project at Supabase.com.
+   - Create a table named 'survival_data' with columns:
+     - id (text, primary key)
+     - world_id (text)
+     - player_name (text)
+     - data (jsonb) - This will store inventory, stats, and buildings.
+   - To enable real-time movement, you can use Supabase Broadcast.
+   - I have included the logic structure in index.html. To fully activate it, add the Supabase CDN script and paste your API keys into a new 'config.js'.
+
+3. MULTIPLAYER:
+   - Every player who enters the SAME "World ID" in settings will share the same building data.
+   - Currently, the game uses LocalStorage for single-player persistence.
+   - The Coordinates Bar at the top helps you find your friends in the world.
+
+4. SAVING:
+   - The game auto-saves to your browser every 30 seconds.
+   - Your progress remains even if you update the game files, as long as you use the same browser and domain.
